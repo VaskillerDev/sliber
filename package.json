@@ -4,8 +4,12 @@
   "main": "index.js",
   "author": "",
   "license": "ISC",
+  "scripts": {
+    "start": "npx tsc && node dist/index.js"
+  },
   "dependencies": {
-    "fastify": "^3.24.1"
+    "fastify": "3.24.1",
+    "fastify-multipart": "5.2.0"
   },
   "devDependencies": {
     "typescript": "4.4.4"
