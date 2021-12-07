@@ -1,0 +1,16 @@
+﻿# idea
+.idea
+
+# vs code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Local History for Visual Studio Code
+.history/
+
+dist
+node_modules
+package-lock.json
