@@ -1,6 +1,7 @@
 ﻿import {FastifyInstance} from "fastify";
 import IRouteHandler from "../handlers/IRouteHandler";
 import HostConfig from "../configs/HostConfig";
+import GoogleAuth from "./oauth2/GoogleAuth";
 
 /** A class describing all interaction with the application */
 export default class App {
@@ -11,6 +12,11 @@ export default class App {
     
     constructor(server: FastifyInstance) {
         this.#server = server;
+    }
+    
+    public setGoogleAuth(credJson: any) {
+        const googleAuth = GoogleAuth.createFromJson(credJson);
+        GoogleAuth.register(this.#server, googleAuth);
     }
     
     public setHostConfig(cfg: HostConfig) : void {
@@ -37,6 +43,7 @@ export default class App {
     
     private listenCallback(err: Error|null, address: string) : void {
         if (err) {
+            // todo: add logger
             this.#server.log.error(err)
             process.exit(1)
         }
