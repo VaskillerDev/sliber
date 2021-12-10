@@ -2,6 +2,8 @@
 import IRouteHandler from "../handlers/IRouteHandler";
 import HostConfig from "../configs/HostConfig";
 import GoogleAuth from "./oauth2/GoogleAuth";
+import IAppConfig from "../configs/IAppConfig";
+import GoogleOAuthConfig from "../configs/GoogleOAuthConfig";
 
 /** A class describing all interaction with the application */
 export default class App {
@@ -13,14 +15,19 @@ export default class App {
     constructor(server: FastifyInstance) {
         this.#server = server;
     }
-    
-    public setGoogleAuth(credJson: any) {
-        const googleAuth = GoogleAuth.createFromJson(credJson);
-        GoogleAuth.register(this.#server, googleAuth);
+
+    public setHostConfig(config: IAppConfig) : void {
+        if (!config.host) throw new Error('hostConfig not found');
+        this.#hostCfg = HostConfig.fromAppConfig(config);
     }
     
-    public setHostConfig(cfg: HostConfig) : void {
-        this.#hostCfg = cfg;
+    public setGoogleAuth(config: IAppConfig) {
+        if (!this.#hostCfg) throw new Error('hostConfig not found');
+        if (!config.googleOauth) throw new Error('googleOauth not found');
+
+        const googleOauthConfig = GoogleOAuthConfig.fromAppConfig(config);
+        const googleAuth = GoogleAuth.fromConfig(googleOauthConfig);
+        GoogleAuth.register(this.#server, this.#hostCfg, googleAuth);
     }
     
     public setHandler(handler: IRouteHandler) : void {

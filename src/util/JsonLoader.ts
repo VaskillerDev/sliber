@@ -1,15 +1,17 @@
 ﻿import fs, {PathLike} from 'fs'
+import ILoader from "./ILoader";
 
-export default class JsonLoader {
-    public static async fromFile(path: PathLike) : Promise<any> {
+export default class JsonLoader 
+    implements ILoader<any> {
+    
+    public async fromFile(path: PathLike) : Promise<any> {
         let buf = await fs.promises.readFile(path);
         let str = buf.toString('utf-8');
         return JSON.parse(str);
     }
 
-    public static fromFileSync(path: PathLike) : any {
+    public fromFileSync(path: PathLike) : any {
         let buf = fs.readFileSync(path);
-        let str = buf.toString('utf-8');
-        return JSON.parse(str);
+        return JSON.parse(buf.toString('utf-8'));
     }
 }
