@@ -1,7 +1,9 @@
 ﻿import oauthPlugin, {OAuth2Namespace} from 'fastify-oauth2';
-import {FastifyInstance} from "fastify";
+import {FastifyInstance, FastifyReply, FastifyRequest} from "fastify";
 import GoogleOAuthConfig from "../../configs/GoogleOAuthConfig";
 import HostConfig from "../../configs/HostConfig";
+import GoogleOAuthCredentials from "./GoogleOAuthCredentials";
+import IRawGoogleOAuthCredentials from "../../handlers/oauth2/IRawGoogleOAuthCredentials";
 
 const name = 'googleOAuth2';
 
@@ -26,7 +28,7 @@ export default class GoogleAuth {
         return new GoogleAuth(config, cred);
     }
     
-    private static createCredentialsFromJson(json: any) : GoogleOAuthCredentials {
+    private static createCredentialsFromJson(json: IRawGoogleOAuthCredentials) : GoogleOAuthCredentials {
         return {
             clientId: json['client_id'],
             projectId: json['project_id'],
@@ -57,20 +59,14 @@ export default class GoogleAuth {
         });
         
         server.get(auth.#config.callbackUri, async function(req,res) {
-
-            let oauth2Response = (this as unknown as any)[name] as OAuth2Namespace;
-            const token = await oauth2Response.getAccessTokenFromAuthorizationCodeFlow(req);
-            
-            res.code(200).send({token});
+            await auth.authCallback.bind(this)(req,res)
         });
     }
-}
+    
+    async authCallback(req: FastifyRequest,res: FastifyReply) {
+        let oauth2Response = (this as unknown as any)[name] as OAuth2Namespace;
+        const token = await oauth2Response.getAccessTokenFromAuthorizationCodeFlow(req);
 
-export interface GoogleOAuthCredentials {
-    clientId: string;
-    projectId : string;
-    authUri: string;
-    tokenUri: string;
-    authProvider: string;
-    clientSecret: string;
+        res.code(200).send({token});
+    }
 }
