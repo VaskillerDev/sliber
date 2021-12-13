@@ -2,12 +2,12 @@
 import JsonLoader from "../util/JsonLoader";
 
 export default class GoogleOAuthConfig {
-    readonly #path: string;
+    readonly #pathToFile: string;
     readonly #callbackUri: string;
     readonly #startRedirectPath: string;
     
     constructor(path: string, callbackUri : string, startRedirectPath: string ) {
-        this.#path = path;
+        this.#pathToFile = path;
         this.#callbackUri = callbackUri;
         this.#startRedirectPath = startRedirectPath;
     }
@@ -20,7 +20,7 @@ export default class GoogleOAuthConfig {
     }
     
     public json() {
-        return new JsonLoader().fromFileSync(this.#path);
+        return new JsonLoader().fromFileSync(this.#pathToFile);
     }
     
     public get callbackUri() {
