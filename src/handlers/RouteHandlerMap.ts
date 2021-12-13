@@ -1,6 +1,11 @@
-﻿import IRouteHandlerMap from "./IRouteHandlerMap";
+﻿import RouteHandlerMapType from "./RouteHandlerMapType";
 
-const RouteHandlerMap : IRouteHandlerMap = {
+type RouteHandlerType = {
+    "/": null;
+    "/upload": null
+}
+
+const RouteHandlerMap : RouteHandlerMapType<RouteHandlerType> = {
     '/': {
         route: '/',
         method: 'get',
@@ -17,7 +22,5 @@ const RouteHandlerMap : IRouteHandlerMap = {
         }
     }
 }
-
-
 
 export default RouteHandlerMap
