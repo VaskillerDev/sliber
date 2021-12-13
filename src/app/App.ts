@@ -11,6 +11,7 @@ export default class App {
     readonly #handlerMap : IHandlerMap = new Map<string, IRouteHandler>();
     
     #hostCfg? : HostConfig;
+    #googleAuth? : GoogleAuth;
     
     constructor(server: FastifyInstance) {
         this.#server = server;
@@ -26,8 +27,8 @@ export default class App {
         if (!config.googleOauth) throw new Error('googleOauth not found');
 
         const googleOauthConfig = GoogleOAuthConfig.fromAppConfig(config);
-        const googleAuth = GoogleAuth.fromConfig(googleOauthConfig);
-        GoogleAuth.register(this.#server, this.#hostCfg, googleAuth);
+        this.#googleAuth = GoogleAuth.fromConfig(googleOauthConfig);
+        GoogleAuth.register(this.#server, this.#hostCfg, this.#googleAuth);
     }
     
     public setHandler(handler: IRouteHandler) : void {
