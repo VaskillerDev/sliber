@@ -4,19 +4,33 @@ import HostConfig from "../configs/HostConfig";
 import GoogleAuth from "./oauth2/GoogleAuth";
 import IAppConfig from "../configs/IAppConfig";
 import GoogleOAuthConfig from "../configs/GoogleOAuthConfig";
+import OwnerManager from "./owner/OwnerManager";
 
 /** A class describing all interaction with the application */
 export default class App {
+    private static instance?: App = undefined;
+    
     readonly #server : FastifyInstance;
     readonly #handlerMap : IHandlerMap = new Map<string, IRouteHandler>();
     
     #hostCfg? : HostConfig;
     #googleAuth? : GoogleAuth;
     
-    constructor(server: FastifyInstance) {
+    #ownerManager: OwnerManager;
+    
+    private constructor(server: FastifyInstance) {
         this.#server = server;
+        this.#ownerManager = new OwnerManager();
     }
 
+    public static getInstance(server?: FastifyInstance) : App {
+        if (!App.instance) {
+            if (!server) throw new Error('App.instance not found and server param not specified');
+            App.instance = new App(server);
+        }
+        return App.instance;
+    }
+    
     public setHostConfig(config: IAppConfig) : void {
         if (!config.host) throw new Error('hostConfig not found');
         this.#hostCfg = HostConfig.fromAppConfig(config);
