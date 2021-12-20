@@ -63,10 +63,14 @@ export default class GoogleAuth {
         });
     }
     
-    async authCallback(req: FastifyRequest,res: FastifyReply) {
+    public async authCallback(req: FastifyRequest,res: FastifyReply) {
         let oauth2Response = (this as unknown as any)[name] as OAuth2Namespace;
         const token = await oauth2Response.getAccessTokenFromAuthorizationCodeFlow(req);
 
         res.code(200).send({token});
+    }
+    
+    public getConfig() : GoogleOAuthConfig {
+        return this.#config;
     }
 }

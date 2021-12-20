@@ -7,6 +7,18 @@ export type RouteHandlerOwnerType = {
     "/owner/reset_owner": null
 }
 
+const queryStringJsonSchema = {
+    type: 'object',
+    properties: {
+        a: { type: 'integer' },
+        b: { type: 'integer' }
+    }
+}
+
+const schema = {
+    querystring: queryStringJsonSchema
+}
+
 export default class RouteHandlerOwnerMap 
     extends BaseRouteHandlerMap {
     
@@ -20,9 +32,17 @@ export default class RouteHandlerOwnerMap
             '/owner/get_token': {
                 app,
                 route: '/owner/get_token',
+                schema,
                 method: 'get',
                 fn: async (req, res) => {
-                    res.code(505).send();
+                    
+                    let manager = app.getOwnerManager();
+                    let owner = manager.createEmptyOwner();
+                    
+                    const auth = app.getGoogleAuth();
+                    const config = auth.getConfig();
+                    
+                    res.redirect(config.startRedirectPath);
                 }
             },
             '/owner/reset_owner': {

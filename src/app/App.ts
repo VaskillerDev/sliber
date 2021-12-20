@@ -16,13 +16,17 @@ export default class App {
     #hostCfg? : HostConfig;
     #googleAuth? : GoogleAuth;
     
-    #ownerManager: OwnerManager;
+    readonly #ownerManager: OwnerManager;
     
     private constructor(server: FastifyInstance) {
         this.#server = server;
         this.#ownerManager = new OwnerManager();
     }
 
+    public getOwnerManager() : OwnerManager {
+        return this.#ownerManager
+    }
+    
     public static getInstance(server?: FastifyInstance) : App {
         if (!App.instance) {
             if (!server) throw new Error('App.instance not found and server param not specified');
@@ -45,13 +49,28 @@ export default class App {
         GoogleAuth.register(this.#server, this.#hostCfg, this.#googleAuth);
     }
     
+    public getGoogleAuth() : GoogleAuth {
+        if (this.#googleAuth === undefined) throw new Error('googleAuth is undefined');
+        return this.#googleAuth;
+    }
+    
     public setHandler(handler: IRouteHandler) : void {
+        if (handler.schema) {
+            this.setHandlerWithSpecifyRouteAndSchema(handler.route, handler.schema, handler);
+            return;
+        }
+        
         this.setHandlerWithSpecifyRoute(handler.route, handler);
     }
     
     public setHandlerWithSpecifyRoute(route: string, handler: IRouteHandler) : void {
         this.#handlerMap.set(route, handler);
         this.#server[handler.method](route, handler.fn);
+    }
+
+    public setHandlerWithSpecifyRouteAndSchema(route: string, schema: object, handler: IRouteHandler) : void {
+        this.#handlerMap.set(route, handler);
+        this.#server[handler.method](route, {schema}, handler.fn);
     }
     
     public listen() : void {
