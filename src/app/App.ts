@@ -64,7 +64,8 @@ export default class App {
     
     private registerGoogleAuthHandlers() {
         if (!this.#googleAuth) return;
-        
+
+        // регистрация owner'а по userInfo
         this.#googleAuth
             .emitter
             .onUserInfoReceived(this.#ownerManager.getOrCreateOwnerFromGoogleUserInfo.bind(this.#ownerManager));

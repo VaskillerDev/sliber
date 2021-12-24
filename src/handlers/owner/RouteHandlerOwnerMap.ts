@@ -1,22 +1,11 @@
 ﻿import RouteHandlerMapType from "../RouteHandlerMapType";
 import IRouteHandlerMapArgs from "../IRouteHandlerMapArgs";
 import BaseRouteHandlerMap from "../BaseRouteHandlerMap";
+import {checkGetTokenSchema, GetTokenSchema} from "./RouterHandlerOwnerSchema";
 
 export type RouteHandlerOwnerType = {
     "/owner/get_token": null;
     "/owner/reset_owner": null
-}
-
-const queryStringJsonSchema = {
-    type: 'object',
-    properties: {
-        a: { type: 'integer' },
-        b: { type: 'integer' }
-    }
-}
-
-const schema = {
-    querystring: queryStringJsonSchema
 }
 
 export default class RouteHandlerOwnerMap 
@@ -32,20 +21,14 @@ export default class RouteHandlerOwnerMap
             '/owner/get_token': {
                 app,
                 route: '/owner/get_token',
-                schema,
+                schema: GetTokenSchema,
                 method: 'get',
                 fn: async (req, res) => {
                     
-                    let manager = app.getOwnerManager();
-                    let owner = manager.createEmptyOwner();
-                    
-                    
                     const auth = app.getGoogleAuth();
                     const config = auth.getConfig();
-                    
-                    const ownerName = req.query as any ['name'] as string;
-                    await app.getStorage().push('ownerName', ownerName);
-                    
+
+                    checkGetTokenSchema(res, req.query)
                     
                     res.redirect(config.startRedirectPath);
                 }
