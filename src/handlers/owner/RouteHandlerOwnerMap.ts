@@ -39,8 +39,13 @@ export default class RouteHandlerOwnerMap
                     let manager = app.getOwnerManager();
                     let owner = manager.createEmptyOwner();
                     
+                    
                     const auth = app.getGoogleAuth();
                     const config = auth.getConfig();
+                    
+                    const ownerName = req.query as any ['name'] as string;
+                    await app.getStorage().push('ownerName', ownerName);
+                    
                     
                     res.redirect(config.startRedirectPath);
                 }

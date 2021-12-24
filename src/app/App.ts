@@ -5,6 +5,9 @@ import GoogleAuth from "./oauth2/GoogleAuth";
 import IAppConfig from "../configs/IAppConfig";
 import GoogleOAuthConfig from "../configs/GoogleOAuthConfig";
 import OwnerManager from "./owner/OwnerManager";
+import IStorage from "../storage/IStorage";
+import pushGoogleUserInfo from "../storage/commands/pushGoogleUserInfo";
+import KVStorage from "../storage/KVStorage";
 
 /** A class describing all interaction with the application */
 export default class App {
@@ -15,14 +18,22 @@ export default class App {
     
     #hostCfg? : HostConfig;
     #googleAuth? : GoogleAuth;
-    
-    readonly #ownerManager: OwnerManager;
+    #storage : IStorage = new KVStorage();
+    #ownerManager: OwnerManager;
     
     private constructor(server: FastifyInstance) {
         this.#server = server;
-        this.#ownerManager = new OwnerManager();
+        this.#ownerManager = new OwnerManager({ 
+            storage: this.#storage
+        });
     }
-
+    
+    public initOwnerManager() {
+        this.#ownerManager = new OwnerManager({
+            storage: this.#storage
+        });
+    }
+    
     public getOwnerManager() : OwnerManager {
         return this.#ownerManager
     }
@@ -46,12 +57,31 @@ export default class App {
 
         const googleOauthConfig = GoogleOAuthConfig.fromAppConfig(config);
         this.#googleAuth = GoogleAuth.fromConfig(googleOauthConfig);
+        this.registerGoogleAuthHandlers();
+        
         GoogleAuth.register(this.#server, this.#hostCfg, this.#googleAuth);
+    }
+    
+    private registerGoogleAuthHandlers() {
+        if (!this.#googleAuth) return;
+        
+        this.#googleAuth
+            .emitter
+            .onUserInfoReceived(this.#ownerManager.getOrCreateOwnerFromGoogleUserInfo.bind(this.#ownerManager));
     }
     
     public getGoogleAuth() : GoogleAuth {
         if (this.#googleAuth === undefined) throw new Error('googleAuth is undefined');
         return this.#googleAuth;
+    }
+
+    public setStorage(storage : IStorage) {
+        this.#storage = storage;
+    }
+    
+    public getStorage() : IStorage {
+        if (this.#storage === undefined) throw new Error('storage is undefined');
+        return this.#storage;
     }
     
     public setHandler(handler: IRouteHandler) : void {

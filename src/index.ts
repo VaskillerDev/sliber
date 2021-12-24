@@ -8,6 +8,7 @@ import RouteHandlerOwnerMap from "./handlers/owner/RouteHandlerOwnerMap";
 import IRouteHandlerMapArgs from "./handlers/IRouteHandlerMapArgs";
 import setAllHandlers from "./util/setAllHandlers";
 import RouteHandlerMapFactory from "./handlers/RouteHandlerMapFactory";
+import KVStorage from "./storage/KVStorage";
 
 let server : FastifyInstance = Server({logger: true});
 server.register(MultipartPlugin);
@@ -16,6 +17,8 @@ const configLoader = new ConfigLoader();
 const appConfig = configLoader.fromFileSync('./config.dev.json');
 
 const app = App.getInstance(server);
+app.setStorage(new KVStorage());
+app.initOwnerManager();
 app.setHostConfig(appConfig);
 app.setGoogleAuth(appConfig)
 
