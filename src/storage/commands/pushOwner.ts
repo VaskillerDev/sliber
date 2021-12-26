@@ -1,7 +1,7 @@
 ﻿import Owner from "../../app/owner/Owner";
-import IStorage from "../IStorage";
+import IKeyValueStorage from "../IKeyValueStorage";
 
-export default function pushOwner(s: IStorage, owner: Owner) : Promise<void> {
+export default function pushOwner(s: IKeyValueStorage, owner: Owner) : Promise<void> {
     const name = owner.getName();
     const ownerId = owner.getOwnerId();
     

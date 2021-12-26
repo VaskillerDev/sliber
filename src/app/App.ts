@@ -5,9 +5,9 @@ import GoogleAuth from "./oauth2/GoogleAuth";
 import IAppConfig from "../configs/IAppConfig";
 import GoogleOAuthConfig from "../configs/GoogleOAuthConfig";
 import OwnerManager from "./owner/OwnerManager";
-import IStorage from "../storage/IStorage";
+import IKeyValueStorage from "../storage/IKeyValueStorage";
 import pushGoogleUserInfo from "../storage/commands/pushGoogleUserInfo";
-import KVStorage from "../storage/KVStorage";
+import KeyValueStorage from "../storage/KeyValueStorage";
 
 /** A class describing all interaction with the application */
 export default class App {
@@ -18,7 +18,7 @@ export default class App {
     
     #hostCfg? : HostConfig;
     #googleAuth? : GoogleAuth;
-    #storage : IStorage = new KVStorage();
+    #storage : IKeyValueStorage = new KeyValueStorage();
     #ownerManager: OwnerManager;
     
     private constructor(server: FastifyInstance) {
@@ -76,11 +76,11 @@ export default class App {
         return this.#googleAuth;
     }
 
-    public setStorage(storage : IStorage) {
+    public setStorage(storage : IKeyValueStorage) {
         this.#storage = storage;
     }
     
-    public getStorage() : IStorage {
+    public getStorage() : IKeyValueStorage {
         if (this.#storage === undefined) throw new Error('storage is undefined');
         return this.#storage;
     }

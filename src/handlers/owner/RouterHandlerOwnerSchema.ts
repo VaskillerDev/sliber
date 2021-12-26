@@ -4,7 +4,7 @@ export const GetTokenSchema = {
     querystring: {
         type: 'object',
         properties: {
-            auth3dParty: {type: 'number'}
+            auth3dParty: {type: 'string'}
         }
     }
 }

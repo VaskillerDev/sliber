@@ -1,12 +1,12 @@
 ﻿import Owner from "./Owner";
 import {randomUUID} from "crypto";
 import GoogleUserInfo from "../oauth2/GoogleUserInfo";
-import IStorage from "../../storage/IStorage";
+import IKeyValueStorage from "../../storage/IKeyValueStorage";
 import pushOwner from "../../storage/commands/pushOwner";
 
 export default class OwnerManager {
     
-    #storage: IStorage;
+    #storage: IKeyValueStorage;
     #ownerMap : Map<string, Owner>;
     
     constructor(args: OwnerManagerArgs) {
@@ -27,25 +27,33 @@ export default class OwnerManager {
     public async getOrCreateOwnerFromGoogleUserInfo(data: GoogleUserInfo) : Promise<Owner> {
         const {id} = data;
 
-        {
+        { // try get exist owner
             const maybeOwner = await this.#storage.pull(id);
 
             if (maybeOwner) {
-                let ownerObj = JSON.parse(maybeOwner)
-                return new Owner(ownerObj['ownerId'], ownerObj['name']); // todo:???????
+                const {ownerId, name} = JSON.parse(maybeOwner);
+                const owner = new Owner(ownerId, name);
+                this.#ownerMap.set(ownerId,owner);
+                return owner;
             }
         }
-
-        const owner = this.createFromGoogleUserInfo(data);
-        await pushOwner(this.#storage, owner);
-        const maybeOwner = await this.#storage.pull(id);
-        if (!maybeOwner) 
+        { // create new owner and save to db
+            const owner = this.createFromGoogleUserInfo(data);
+            await pushOwner(this.#storage, owner);
+        }
+        // try get created owner
+        const maybeOwnerJson = await this.#storage.pull(id);
+        if (!maybeOwnerJson) 
             throw new Error('getOrCreateOwnerFromGoogleUserInfo error: storage pull');
         
-        return maybeOwner;
+        const {ownerId, name} = JSON.parse(maybeOwnerJson);
+        const owner = new Owner(ownerId, name);
+        this.#ownerMap.set(ownerId,owner);
+        
+        return owner;
     }
 }
 
 export interface OwnerManagerArgs {
-    storage: IStorage
+    storage: IKeyValueStorage
 }
