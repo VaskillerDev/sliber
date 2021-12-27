@@ -1,4 +1,4 @@
-﻿import {FastifyInstance} from "fastify";
+﻿import {FastifyInstance, FastifyReply} from "fastify";
 import IRouteHandler from "../handlers/IRouteHandler";
 import GoogleAuth from "./oauth2/GoogleAuth";
 import IAppConfig from "../configs/IAppConfig";
@@ -10,6 +10,7 @@ import KeyValueStorage from "../storage/KeyValueStorage";
 import HostConfig from "../configs/HostConfig";
 import SecurityConfig from "../configs/SecurityConfig";
 import JwtManager from "./jwt/JwtManager";
+import Jwt from "./jwt/Jwt";
 
 /** A class describing all interaction with the application */
 export default class App {
@@ -88,12 +89,14 @@ export default class App {
         // регистрация owner'а по userInfo
         this.#googleAuth
             .emitter
-            .onUserInfoReceived(async info => {
+            .onUserInfoReceived(async data => {
+                if (!this.#jwtManager)
+                    throw new Error('jwtManager not found');
+                
+                const {info, res} = data;
                 let owner = await this.#ownerManager.getOrCreateOwnerFromGoogleUserInfo(info);
-                
-                
-                let jwt = this.#jwtManager?.createJwtFromOwner(owner);
-                let a = 2+2;
+                let jwt = this.#jwtManager.createJwtFromOwner(owner);
+                this.sendJwt(res, jwt);
             });
     }
     
@@ -145,6 +148,19 @@ export default class App {
             this.#server.log.error(err)
             process.exit(1)
         }
+    }
+    
+    private sendJwt(res: FastifyReply, jwt: Jwt) : void {
+        if (!jwt) {
+            res.code(500).send({
+               msg:  'jwt is undefined or null'
+            });
+            return;
+        }
+        
+        res.status(200).send({
+            token: jwt.toString()
+        });
     }
 }
 

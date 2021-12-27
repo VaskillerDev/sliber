@@ -80,10 +80,12 @@ export default class GoogleAuth {
         let oauth2Response = (this as unknown as any)[NAME] as OAuth2Namespace;
         const token = await oauth2Response.getAccessTokenFromAuthorizationCodeFlow(req);
         
-        const data = await GA.getGoogleUserInfo(token.access_token);
-        auth.emitter.emitUserInfoReceived(data);
-        
-        res.code(200).send({token});
+        const info = await GA.getGoogleUserInfo(token.access_token);
+        auth.emitter.emitUserInfoReceived({
+            info,
+            res
+        });
+        return;
     }
 
     /**

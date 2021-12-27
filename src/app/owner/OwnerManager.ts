@@ -1,5 +1,4 @@
 ﻿import Owner from "./Owner";
-import {randomUUID} from "crypto";
 import GoogleUserInfo from "../oauth2/GoogleUserInfo";
 import IKeyValueStorage from "../../storage/IKeyValueStorage";
 import pushOwner from "../../storage/commands/pushOwner";
@@ -14,14 +13,14 @@ export default class OwnerManager {
         this.#ownerMap = new Map<string, Owner>();
     }
     
-    public createEmptyOwner() : Owner {
-        
-        const uuid = randomUUID()
-        return new Owner(uuid, "empty");
-    }
-    
     public createFromGoogleUserInfo(data: GoogleUserInfo) : Owner {
-        return new Owner(data.id, data.email);
+        return this.createOwner(data.id, data.email)
+    }
+
+    public createOwner(ownerId: string, name: string) : Owner {
+        const owner = new Owner(ownerId, name);
+        this.#ownerMap.set(ownerId, owner);
+        return owner;
     }
     
     public async getOrCreateOwnerFromGoogleUserInfo(data: GoogleUserInfo) : Promise<Owner> {
@@ -32,9 +31,7 @@ export default class OwnerManager {
 
             if (maybeOwner) {
                 const {ownerId, name} = JSON.parse(maybeOwner);
-                const owner = new Owner(ownerId, name);
-                this.#ownerMap.set(ownerId,owner);
-                return owner;
+                return this.createOwner(ownerId, name);
             }
         }
         { // create new owner and save to db
@@ -47,10 +44,7 @@ export default class OwnerManager {
             throw new Error('getOrCreateOwnerFromGoogleUserInfo error: storage pull');
         
         const {ownerId, name} = JSON.parse(maybeOwnerJson);
-        const owner = new Owner(ownerId, name);
-        this.#ownerMap.set(ownerId,owner);
-        
-        return owner;
+        return this.createOwner(ownerId, name);
     }
 }
 

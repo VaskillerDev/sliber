@@ -14,8 +14,9 @@ export default class Jwt {
     constructor(header : JwtHeader, payload : AllowedJwtPayloadType, hashFn: () => string) {
         const header64
             = fromUtf8ToBase64Url(JSON.stringify(header));
+        const s = JSON.stringify(payload);
         const payload64
-            = fromUtf8ToBase64Url(JSON.stringify(payload));
+            = fromUtf8ToBase64Url(s);
         const rawToken 
             = header64 + "." + payload64;
         
