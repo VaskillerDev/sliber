@@ -1,6 +1,7 @@
 ﻿export default interface IAppConfig {
     host: IHostConfig,
-    googleOauth?: OAuthConfig
+    googleOauth?: OAuthConfig,
+    security?: ISecurityConfig
 }
 
 export interface IHostConfig {
@@ -14,4 +15,9 @@ export interface OAuthConfig {
     path: string,
     callbackUri: string,
     startRedirectPath: string
+}
+
+export interface ISecurityConfig {
+    algo: string,
+    vec: string
 }

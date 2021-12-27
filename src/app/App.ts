@@ -1,13 +1,15 @@
 ﻿import {FastifyInstance} from "fastify";
 import IRouteHandler from "../handlers/IRouteHandler";
-import HostConfig from "../configs/HostConfig";
 import GoogleAuth from "./oauth2/GoogleAuth";
 import IAppConfig from "../configs/IAppConfig";
 import GoogleOAuthConfig from "../configs/GoogleOAuthConfig";
 import OwnerManager from "./owner/OwnerManager";
 import IKeyValueStorage from "../storage/IKeyValueStorage";
-import pushGoogleUserInfo from "../storage/commands/pushGoogleUserInfo";
 import KeyValueStorage from "../storage/KeyValueStorage";
+
+import HostConfig from "../configs/HostConfig";
+import SecurityConfig from "../configs/SecurityConfig";
+import JwtManager from "./jwt/JwtManager";
 
 /** A class describing all interaction with the application */
 export default class App {
@@ -17,9 +19,13 @@ export default class App {
     readonly #handlerMap : IHandlerMap = new Map<string, IRouteHandler>();
     
     #hostCfg? : HostConfig;
+    #securityCfg? : SecurityConfig
+    
     #googleAuth? : GoogleAuth;
     #storage : IKeyValueStorage = new KeyValueStorage();
+    
     #ownerManager: OwnerManager;
+    #jwtManager?: JwtManager;
     
     private constructor(server: FastifyInstance) {
         this.#server = server;
@@ -32,6 +38,15 @@ export default class App {
         this.#ownerManager = new OwnerManager({
             storage: this.#storage
         });
+    }
+    
+    public initJwtManager() {
+        if (!this.#securityCfg) 
+            throw new Error("securityCfg not found");
+        
+        this.#jwtManager = new JwtManager({
+            securityConfig: this.#securityCfg
+        })
     }
     
     public getOwnerManager() : OwnerManager {
@@ -51,6 +66,11 @@ export default class App {
         this.#hostCfg = HostConfig.fromAppConfig(config);
     }
     
+    public setSecurityConfig(config: IAppConfig) : void {
+        if (!config.security) throw new Error('securityConfig not found');
+        this.#securityCfg = SecurityConfig.fromAppConfig(config);
+    }
+    
     public setGoogleAuth(config: IAppConfig) {
         if (!this.#hostCfg) throw new Error('hostConfig not found');
         if (!config.googleOauth) throw new Error('googleOauth not found');
@@ -68,7 +88,13 @@ export default class App {
         // регистрация owner'а по userInfo
         this.#googleAuth
             .emitter
-            .onUserInfoReceived(this.#ownerManager.getOrCreateOwnerFromGoogleUserInfo.bind(this.#ownerManager));
+            .onUserInfoReceived(async info => {
+                let owner = await this.#ownerManager.getOrCreateOwnerFromGoogleUserInfo(info);
+                
+                
+                let jwt = this.#jwtManager?.createJwtFromOwner(owner);
+                let a = 2+2;
+            });
     }
     
     public getGoogleAuth() : GoogleAuth {

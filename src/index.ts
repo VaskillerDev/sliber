@@ -18,9 +18,11 @@ const appConfig = configLoader.fromFileSync('./config.dev.json');
 
 const app = App.getInstance(server);
 app.setStorage(new KeyValueStorage());
-app.initOwnerManager();
 app.setHostConfig(appConfig);
 app.setGoogleAuth(appConfig)
+app.setSecurityConfig(appConfig);
+app.initOwnerManager();
+app.initJwtManager();
 
 const args : IRouteHandlerMapArgs = {
     app
